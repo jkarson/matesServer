@@ -17,7 +17,7 @@ const postNewMessage = (req: express.Request, res: express.Response): void => {
             res.json({ ...res.locals, success: false, message: 'Apartment not found' });
             return;
         }
-        apartment.messages.splice(0, 0, message);
+        apartment.messages.push(message);
         apartment.save(function (err, savedApartment) {
             if (err) {
                 console.error(err);

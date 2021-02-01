@@ -1,7 +1,6 @@
 import { Schema } from 'mongoose';
-import { EventType } from './EventType';
 
 export interface EventsInfoType {
-    events: Schema.Types.ObjectId[]; //EventType[];
-    invitations: Schema.Types.ObjectId[]; //EventType[];
+    events: Schema.Types.ObjectId[];
+    invitations: Schema.Types.ObjectId[];
 }

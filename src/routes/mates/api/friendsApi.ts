@@ -29,17 +29,11 @@ const searchCodeFriends = (req: express.Request, res: express.Response): void =>
             }
             console.log('code apartment found');
             const codeApartmentId = codeApartment._id.toString();
-            //console.log('code apartment id:' + codeApartmentId.toString());
-            //console.log('user apartment:');
-            //console.log(userApartment);
-            // console.log(typeof codeApartmentId);
-            //console.log(typeof userApartment._id);
             if (codeApartmentId === userApartment._id.toString()) {
                 console.log('cannot add your own apartment as friend');
                 res.json({ ...res.locals, success: false });
                 return;
             }
-            //to do: verify following 3 if cases
             if (userApartment.friendsInfo.friends.find((apartmentId) => apartmentId.toString() === codeApartmentId)) {
                 console.log('cannot add a friend as a friend.');
                 res.json({ ...res.locals, success: false });
@@ -390,7 +384,7 @@ const deleteOutgoingFriendRequest = (req: express.Request, res: express.Response
     });
 };
 
-const deleteFriend = (req: express.Request, res: express.Response) => {
+const deleteFriend = (req: express.Request, res: express.Response): void => {
     const { apartmentId, friendApartmentId } = req.body;
     Apartment.findOne({ _id: apartmentId }, function (err, userApartment) {
         if (err) {

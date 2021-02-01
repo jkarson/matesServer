@@ -2,23 +2,30 @@ import passport from 'passport';
 import passportLocal from 'passport-local';
 import User from '../objects/user/models/User';
 import { UserType } from '../objects/user/types/UserType';
+import bcrypt from 'bcrypt';
 
 const configurePassport = (): void => {
     console.log('configuring passport');
     const LocalStrategy = passportLocal.Strategy;
     passport.use(
         new LocalStrategy(function (username, password, done) {
-            User.findOne({ username: username }, function (err, user) {
+            User.findOne({ username: username }, async function (err, user) {
                 if (err) {
                     return done(err);
                 }
                 if (!user) {
-                    return done(null, false, { message: 'Invalid username.' });
+                    return done(null, false, { message: 'Invalid username' });
                 }
-                if (!user.validatePassword(password)) {
-                    return done(null, false, { message: 'Incorrect password.' });
-                }
-                return done(null, user);
+                bcrypt.compare(password, user.password, function (error, valid) {
+                    if (error) {
+                        console.error(error);
+                        return done(null, false, { message: 'Internal server error' });
+                    }
+                    if (!valid) {
+                        return done(null, false, { message: 'Incorrect password' });
+                    }
+                    return done(null, user);
+                });
             });
         }),
     );

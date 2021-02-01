@@ -1,8 +1,7 @@
 import express from 'express';
 import Apartment from '../../../objects/apartment/models/Apartment';
-
-//TO DO: Huge requests are causing server crashes. This is good healthy progress but I may need to
-//use a buffer or something or figure out another way to send less data back and forth
+import mongoose from 'mongoose';
+import { ChoreType } from '../../../objects/chores/types/ChoreType';
 
 const createChoreGenerator = (req: express.Request, res: express.Response): void => {
     const { apartmentId, newChoreGenerator, generatedChores } = req.body;
@@ -17,9 +16,16 @@ const createChoreGenerator = (req: express.Request, res: express.Response): void
             res.json({ ...res.locals, success: false });
             return;
         }
+        const choreGenerator = { ...newChoreGenerator, _id: mongoose.Types.ObjectId() };
         console.log('user apartment found');
-        console.log('adding chore generator');
-        userApartment.choresInfo.choreGenerators.push(newChoreGenerator);
+        userApartment.choresInfo.choreGenerators.push(choreGenerator);
+        console.log('chore generator added to user');
+        const generatedChoresWithChoreGeneratorId = generatedChores.map((chore: ChoreType) => {
+            return { ...chore, choreGeneratorId: choreGenerator._id };
+        });
+        console.log('new chores tagged with chore generator ID');
+        userApartment.choresInfo.chores = userApartment.choresInfo.chores.concat(generatedChoresWithChoreGeneratorId);
+        console.log('new chores added to user');
         userApartment.save(function (err, savedUserApartment) {
             if (err) {
                 console.error(err);
@@ -27,30 +33,7 @@ const createChoreGenerator = (req: express.Request, res: express.Response): void
                 return;
             }
             console.log('user apartment saved');
-            const savedChoreGenerators = savedUserApartment.choresInfo.choreGenerators;
-            //to do: can we guarantee accuracy (via atomicity) here? is it already guaranteed?
-            const savedChoreGenerator = savedChoreGenerators[savedChoreGenerators.length - 1];
-            console.log('saved chore generator:');
-            console.log(savedChoreGenerator);
-            console.log('adding cgID to new chores');
-            const generatedChoresWithChoreGeneratorId = generatedChores.map((chore: any) => {
-                return { ...chore, choreGeneratorId: savedChoreGenerator._id };
-            });
-            console.log('generated chores w cgId:');
-            console.log(generatedChoresWithChoreGeneratorId);
-            console.log('adding chores to apartment');
-            savedUserApartment.choresInfo.chores = savedUserApartment.choresInfo.chores.concat(
-                generatedChoresWithChoreGeneratorId,
-            );
-            savedUserApartment.save(function (err, finalApartment) {
-                if (err) {
-                    console.error(err);
-                    res.json({ ...res.locals, success: false });
-                    return;
-                }
-                console.log('user apartment saved');
-                res.json({ ...res.locals, success: true, choresInfo: finalApartment.choresInfo });
-            });
+            res.json({ ...res.locals, success: true, choresInfo: savedUserApartment.choresInfo });
         });
     });
 };

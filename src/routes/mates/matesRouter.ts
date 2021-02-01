@@ -36,7 +36,7 @@ import {
     searchCodeFriends,
     sendFriendRequest,
 } from './api/friendsApi';
-import { getMatesUser } from './api/matesApi';
+import { getMatesUser, logOutOfApartment } from './api/matesApi';
 import { deleteMessage, postNewMessage } from './api/messagesApi';
 import { updateApartmentProfile, updateTenantProfile, acceptJoinRequest, deleteJoinRequest } from './api/profileApi';
 const matesRouter = express.Router();
@@ -46,6 +46,7 @@ matesRouter.use(authenticateUser);
 
 //Mates
 matesRouter.get('/', getMatesUser);
+matesRouter.post('/logOutOfApartment', logOutOfApartment);
 
 //Profile
 matesRouter.put('/updateApartmentProfile', updateApartmentProfile);

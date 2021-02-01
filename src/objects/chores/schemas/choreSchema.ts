@@ -1,8 +1,8 @@
 import mongoose from 'mongoose';
-const { Schema } = mongoose;
 
+const { Schema } = mongoose;
 const choreSchema = new Schema({
-    choreGeneratorId: Schema.Types.ObjectId, //note: no ref to ChoreGenerator, as that is not a compiled model
+    choreGeneratorId: Schema.Types.ObjectId,
     name: String,
     assigneeIds: [{ type: Schema.Types.ObjectId, ref: 'User' }],
     date: Date,

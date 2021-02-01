@@ -9,9 +9,4 @@ const userSchema = new Schema({
     selectedApartment: { type: Schema.Types.ObjectId, ref: 'Apartment' },
 });
 
-//to do: write this safer
-userSchema.methods.validatePassword = function (pwd: string) {
-    return this.password === pwd;
-};
-
 export default userSchema;

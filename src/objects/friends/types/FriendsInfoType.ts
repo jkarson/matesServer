@@ -1,5 +1,4 @@
 import { Schema } from 'mongoose';
-import { ApartmentType } from '../apartment/ApartmentType';
 
 export interface FriendsInfoType {
     friends: Schema.Types.ObjectId[];

@@ -10,14 +10,17 @@ const addNewContact = (req: express.Request, res: express.Response): void => {
             return;
         }
         if (!apartment) {
+            console.log('user apartment not found');
             res.json({ ...res.locals, success: false });
             return;
         }
+        console.log('user apartment found');
         apartment.manuallyAddedContacts.push(contact);
         apartment.save(function (err, resultApartment) {
             if (err) {
                 console.error(err);
                 res.json({ ...res.locals, success: false });
+                return;
             }
             res.json({ ...res.locals, success: true, manuallyAddedContacts: resultApartment.manuallyAddedContacts });
         });
@@ -25,7 +28,6 @@ const addNewContact = (req: express.Request, res: express.Response): void => {
 };
 
 const deleteContact = (req: express.Request, res: express.Response): void => {
-    //console.log('hello from delete contact');
     const { apartmentId, contactId } = req.body;
     Apartment.findOne({ _id: apartmentId }, function (err, apartment) {
         if (err) {
@@ -40,19 +42,27 @@ const deleteContact = (req: express.Request, res: express.Response): void => {
         const deletionIndex = apartment.manuallyAddedContacts.findIndex(
             (contact) => contact._id.toString() === contactId.toString(),
         );
-        apartment.manuallyAddedContacts.splice(deletionIndex, 1);
-        apartment.save(function (err, resultApartment) {
-            if (err) {
-                console.error(err);
-                res.json({ ...res.locals, success: false });
-                return;
-            }
-            res.json({
-                ...res.locals,
-                success: true,
-                remainingManuallyAddedContacts: resultApartment.manuallyAddedContacts,
+        if (deletionIndex === -1) {
+            console.log('contact not found!');
+            res.json({ ...res.locals, success: false });
+            return;
+        } else {
+            apartment.manuallyAddedContacts.splice(deletionIndex, 1);
+            console.log('contact deleted');
+
+            apartment.save(function (err, resultApartment) {
+                if (err) {
+                    console.error(err);
+                    res.json({ ...res.locals, success: false });
+                    return;
+                }
+                res.json({
+                    ...res.locals,
+                    success: true,
+                    remainingManuallyAddedContacts: resultApartment.manuallyAddedContacts,
+                });
             });
-        });
+        }
     });
 };
 

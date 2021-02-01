@@ -1,5 +1,7 @@
 import express from 'express';
 import Apartment from '../../../objects/apartment/models/Apartment';
+import { ApartmentType } from '../../../objects/apartment/types/ApartmentType';
+import User from '../../../objects/user/models/User';
 import { UserType } from '../../../objects/user/types/UserType';
 
 const getMatesUser = (req: express.Request, res: express.Response): void => {
@@ -11,7 +13,6 @@ const getMatesUser = (req: express.Request, res: express.Response): void => {
         res.json({ ...res.locals, success: false, message: 'No apartment was selected' });
         return;
     }
-    //to do: populate events info as needed
     Apartment.findOne({ _id: selectedApartment })
         .populate('profile.requests', 'username')
         .populate('friendsInfo.friends', 'profile tenants')
@@ -24,9 +25,6 @@ const getMatesUser = (req: express.Request, res: express.Response): void => {
                 select: 'profile.name tenants.name',
             },
         })
-
-        // .populate('eventsInfo.events.invitees', 'profile.name tenants.name')
-        //.populate('eventsInfo.events.attendees', 'profile.name tenants.name')
         .populate({
             path: 'eventsInfo.invitations',
             populate: {
@@ -34,8 +32,6 @@ const getMatesUser = (req: express.Request, res: express.Response): void => {
                 select: 'profile.name tenants.name',
             },
         })
-        //.populate('eventsInfo.invitations.invitees', 'profile.name tenants.name')
-        //.populate('eventsInfo.invitations.attendees', 'profile.name tenants.name')
         .exec(function (err, apartment) {
             if (err) {
                 console.error(err);
@@ -48,11 +44,35 @@ const getMatesUser = (req: express.Request, res: express.Response): void => {
                 return;
             }
             console.log('sending json');
-            console.log('apartment.eventsInfo.events:');
-            console.log(apartment.eventsInfo.events);
-            res.json({ ...res.locals, success: true, userId: user.id, apartment: apartment });
+            res.json({ ...res.locals, success: true, userId: user.id, username: user.username, apartment: apartment });
             return;
         });
 };
 
-export { getMatesUser };
+const logOutOfApartment = (req: express.Request, res: express.Response): void => {
+    const { userId } = req.body;
+    User.findOne({ _id: userId }, function (err, user) {
+        if (err) {
+            console.error(err);
+            res.json({ ...res.locals, success: false });
+            return;
+        }
+        if (!user) {
+            console.log('user not found');
+            res.json({ ...res.locals, success: false });
+            return;
+        }
+        console.log('user found');
+        user.selectedApartment = undefined;
+        user.save(function (err) {
+            if (err) {
+                console.error(err);
+                res.json({ ...res.locals, success: false });
+                return;
+            }
+            res.json({ ...res.locals, success: true });
+        });
+    });
+};
+
+export { getMatesUser, logOutOfApartment };

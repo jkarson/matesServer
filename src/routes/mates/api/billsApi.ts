@@ -1,5 +1,8 @@
 import express from 'express';
 import Apartment from '../../../objects/apartment/models/Apartment';
+import { BillGeneratorType } from '../../../objects/bills/types/BillGeneratorType';
+import { BillType } from '../../../objects/bills/types/BillType';
+import mongoose from 'mongoose';
 
 const createBillGenerator = (req: express.Request, res: express.Response): void => {
     const { apartmentId, newBillGenerator, generatedBills } = req.body;
@@ -15,45 +18,28 @@ const createBillGenerator = (req: express.Request, res: express.Response): void 
             return;
         }
         console.log('user apartment found');
-        const billGenerator = { ...newBillGenerator };
+        const billGenerator = { ...newBillGenerator, _id: mongoose.Types.ObjectId() } as BillGeneratorType;
         console.log('new bill generator: ');
         console.log(billGenerator);
         userApartment.billsInfo.billGenerators.push(billGenerator);
+        console.log('new bill generator added to apartment');
+        const generatedBillsWithBillGeneratorId: BillType[] = generatedBills.map((generatedBill: BillType) => {
+            return { ...generatedBill, billGeneratorId: billGenerator._id };
+        });
+        console.log('new bills initialized with bill generator ID');
+        userApartment.billsInfo.bills = userApartment.billsInfo.bills.concat(generatedBillsWithBillGeneratorId);
+        console.log('new bills added to apartment');
         userApartment.save(function (err, savedUserApartment) {
             if (err) {
                 console.error(err);
                 res.json({ ...res.locals, success: false });
                 return;
             }
-            console.log('bill generator saved');
-            const savedBillGenerators = savedUserApartment.billsInfo.billGenerators;
-
-            //to do: can we guarantee accuracy (via atomicity) here? is it already guaranteed?
-            const savedBillGenerator = savedBillGenerators[savedBillGenerators.length - 1];
-            console.log('saved bill generator: ');
-            console.log(savedBillGenerator);
-            const generatedBillsWithBillGeneratorId = generatedBills.map((generatedBill: any) => {
-                return { ...generatedBill, billGeneratorId: savedBillGenerator._id };
-            });
-            console.log('generated bills with bg id:');
-            console.log(generatedBillsWithBillGeneratorId);
-            savedUserApartment.billsInfo.bills = savedUserApartment.billsInfo.bills.concat(
-                generatedBillsWithBillGeneratorId,
-            );
-            savedUserApartment.save(function (err, savedUserApartmentWithBills) {
-                if (err) {
-                    console.error(err);
-                    res.json({ ...res.locals, success: false });
-                    return;
-                }
-                console.log('bills saved');
-                console.log('saved final apartment:');
-                console.log(savedUserApartmentWithBills);
-                res.json({
-                    ...res.locals,
-                    success: true,
-                    billsInfo: savedUserApartmentWithBills.billsInfo,
-                });
+            console.log('apartment saved');
+            res.json({
+                ...res.locals,
+                success: true,
+                billsInfo: savedUserApartment.billsInfo,
             });
         });
     });
@@ -61,9 +47,6 @@ const createBillGenerator = (req: express.Request, res: express.Response): void 
 
 const updateAmountsOwed = (req: express.Request, res: express.Response): void => {
     const { apartmentId, billId, amountsOwed } = req.body;
-    console.log('hi from update amounts owed');
-    console.log('request body:');
-    console.log(req.body);
     Apartment.findOne({ _id: apartmentId }, function (err, userApartment) {
         if (err) {
             console.error(err);
@@ -211,7 +194,6 @@ const addBillsAndUpdateBillGenerators = (req: express.Request, res: express.Resp
 
 const deleteOldBills = (req: express.Request, res: express.Response): void => {
     const { apartmentId, billDeletionIds } = req.body;
-    console.log('hi from delete old bills');
     Apartment.findOne({ _id: apartmentId }, function (err, userApartment) {
         if (err) {
             console.error(err);

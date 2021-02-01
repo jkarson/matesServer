@@ -17,8 +17,10 @@ const updateApartmentProfile = (req: express.Request, res: express.Response): vo
             res.json({ ...res.locals, success: false });
             return;
         }
-        const oldProfile = apartment.profile;
-        apartment.set('profile', { ...oldProfile, name: name, address: address, quote: quote });
+        console.log('apartment found');
+        apartment.profile.name = name;
+        apartment.profile.address = address;
+        apartment.profile.quote = quote;
         apartment.save(function (err, newApartment) {
             if (err) {
                 console.error(err);

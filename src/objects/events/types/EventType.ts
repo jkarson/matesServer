@@ -1,6 +1,5 @@
 import mongoose from 'mongoose';
 import { Schema } from 'mongoose';
-import { ApartmentType } from '../../apartment/types/ApartmentType';
 
 export interface EventType extends mongoose.Document {
     _id: Schema.Types.ObjectId;

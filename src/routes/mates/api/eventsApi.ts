@@ -153,7 +153,6 @@ const deleteEventFromUserApartment = (
     });
 };
 
-//to do: verify this w a real apartment once we are at that stage
 const deleteEventFromApartment = (apartmentId: Schema.Types.ObjectId, eventId: Schema.Types.ObjectId) => {
     Apartment.findOne({ _id: apartmentId }, function (err, apartment) {
         if (err) {

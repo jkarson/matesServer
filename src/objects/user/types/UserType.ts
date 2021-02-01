@@ -6,5 +6,4 @@ export interface UserType extends mongoose.Document {
     apartments: Schema.Types.ObjectId[];
     requestedApartments: Schema.Types.ObjectId[];
     selectedApartment?: Schema.Types.ObjectId;
-    validatePassword: (password: string) => boolean;
 }
