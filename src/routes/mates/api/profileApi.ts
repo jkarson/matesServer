@@ -100,34 +100,55 @@ const acceptJoinRequest = (req: express.Request, res: express.Response): void =>
                 res.json({ ...res.locals, success: false });
                 return;
             }
-            console.log('made it here');
+            console.log('found user');
             if (user.requestedApartments.includes(apartment._id)) {
-                console.log('made it here #2');
-                const requestIndex = user.requestedApartments.findIndex(
-                    (reqApartmentId) => reqApartmentId === apartment._id,
+                console.log('made it here');
+                const userRequestIndex = user.requestedApartments.findIndex(
+                    (reqApartmentId) => reqApartmentId.toString() === apartment._id.toString(),
                 );
-                user.requestedApartments.splice(requestIndex, 1);
+                if (userRequestIndex === -1) {
+                    console.log('request not found on user');
+                    return;
+                }
+                user.requestedApartments.splice(userRequestIndex, 1);
                 user.apartments.push(apartment._id);
                 user.save(function (err) {
                     if (err) {
                         console.error(err);
                         res.json({ ...res.locals, success: false });
                     }
-                    const requestIndex = apartment.profile.requests.findIndex((reqUserId) => reqUserId === user._id);
+                    const apartmentRequestIndex = apartment.profile.requests.findIndex(
+                        (reqUserId) => reqUserId.toString() === user._id.toString(),
+                    );
+                    if (apartmentRequestIndex === -1) {
+                        console.log('request not found on apartment');
+                        return;
+                    }
+                    apartment.profile.requests.splice(apartmentRequestIndex, 1);
                     apartment.tenants.push({ userId: user._id, name: user.username });
-                    apartment.profile.requests.splice(requestIndex, 1);
                     apartment.save(function (err, resultApartment) {
                         if (err) {
                             console.error(err);
                             res.json({ ...res.locals, success: false });
                             return;
                         }
-                        res.json({
-                            ...res.locals,
-                            success: true,
-                            resultTenants: resultApartment.tenants,
-                            resultRequests: resultApartment.profile.requests,
-                        });
+                        resultApartment
+                            .populate({ path: 'profile.requests', select: 'username' })
+                            .execPopulate(function (err, populatedApartment) {
+                                if (err) {
+                                    console.error(err);
+                                    res.json({ ...res.locals, success: false });
+                                    return;
+                                }
+                                console.log('populated apartment.profile.requests:');
+                                console.log(populatedApartment.profile.requests);
+                                res.json({
+                                    ...res.locals,
+                                    success: true,
+                                    resultTenants: populatedApartment.tenants,
+                                    resultRequests: populatedApartment.profile.requests,
+                                });
+                            });
                     });
                 });
             } else {
@@ -158,29 +179,39 @@ const deleteJoinRequest = (req: express.Request, res: express.Response): void =>
             if (err) {
                 console.error(err);
                 res.json({ ...res.locals, success: false });
+                return;
             }
-            res.json({ ...res.locals, success: true, requests: resultApartment.profile.requests });
-            User.findOne({ _id: requesteeId }, function (err, user) {
-                if (err) {
-                    console.error(err);
-                    return;
-                }
-                if (!user) {
-                    console.log('user not found');
-                    return;
-                }
-                const requestIndex = user.requestedApartments.findIndex(
-                    (aptId) => aptId.toString() === apartmentId.toString(),
-                );
-                user.requestedApartments.splice(requestIndex, 1);
-                user.save(function (err, resultUser) {
+            resultApartment
+                .populate({ path: 'profile.requests', select: 'username' })
+                .execPopulate(function (err, populatedApartment) {
                     if (err) {
                         console.error(err);
+                        res.json({ ...res.locals, success: false });
+                        return;
                     }
-                    console.log('user updated and saved as:');
-                    console.log(resultUser);
+                    res.json({ ...res.locals, success: true, requests: populatedApartment.profile.requests });
+                    User.findOne({ _id: requesteeId }, function (err, user) {
+                        if (err) {
+                            console.error(err);
+                            return;
+                        }
+                        if (!user) {
+                            console.log('user not found');
+                            return;
+                        }
+                        const requestIndex = user.requestedApartments.findIndex(
+                            (aptId) => aptId.toString() === apartmentId.toString(),
+                        );
+                        user.requestedApartments.splice(requestIndex, 1);
+                        user.save(function (err, resultUser) {
+                            if (err) {
+                                console.error(err);
+                            }
+                            console.log('user updated and saved as:');
+                            console.log(resultUser);
+                        });
+                    });
                 });
-            });
         });
     });
 };
