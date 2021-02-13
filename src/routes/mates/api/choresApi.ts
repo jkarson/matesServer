@@ -33,6 +33,7 @@ const createChoreGenerator = (req: express.Request, res: express.Response): void
                 return;
             }
             console.log('user apartment saved');
+            console.log(savedUserApartment.choresInfo);
             res.json({ ...res.locals, success: true, choresInfo: savedUserApartment.choresInfo });
         });
     });

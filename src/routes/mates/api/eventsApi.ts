@@ -2,16 +2,38 @@ import express from 'express';
 import { Schema } from 'mongoose';
 import Apartment from '../../../objects/apartment/models/Apartment';
 import Event from '../../../objects/events/models/Event';
+import { EventType } from '../../../objects/events/types/EventType';
 
 const createEvent = (req: express.Request, res: express.Response): void => {
-    const { apartmentId, newEvent } = req.body;
-    const event = new Event({ ...newEvent });
+    const { apartmentId, newEvent, inviteeIds } = req.body;
+    const event = new Event({ ...newEvent, invitees: inviteeIds });
     event.save(function (err, savedEvent) {
         if (err) {
             console.error(err);
             res.json({ ...res.locals, success: false });
             return;
         }
+        inviteeIds.forEach((id: any) => {
+            Apartment.findOne({ _id: id }, function (err, invitee) {
+                if (err) {
+                    console.error(err);
+                    return;
+                }
+                if (!invitee) {
+                    console.log('invitee not found');
+                    return;
+                }
+                console.log('invitee found');
+                invitee.eventsInfo.invitations.push(savedEvent._id);
+                invitee.save(function (err) {
+                    if (err) {
+                        console.error(err);
+                        return;
+                    }
+                    console.log('event invitation saved on invitee');
+                });
+            });
+        });
         console.log('event created');
         console.log('event:');
         console.log(savedEvent);
@@ -62,7 +84,12 @@ const createEvent = (req: express.Request, res: express.Response): void => {
                         }
                         console.log('apartment populated:');
                         console.log(populatedApartment);
-                        res.json({ ...res.locals, success: true, eventsInfo: populatedApartment.eventsInfo });
+                        res.json({
+                            ...res.locals,
+                            success: true,
+                            eventsInfo: populatedApartment.eventsInfo,
+                            newEventId: savedEvent._id,
+                        });
                     });
             });
         });
@@ -409,7 +436,7 @@ const acceptEventInvitation = (req: express.Request, res: express.Response): voi
 
             event.attendees.push(userApartment._id);
             userApartment.eventsInfo.events.push(event._id);
-            event.save(function (err) {
+            event.save(function (err, savedEvent) {
                 if (err) {
                     console.error(err);
                     res.json({ ...res.locals, success: false });
@@ -445,7 +472,12 @@ const acceptEventInvitation = (req: express.Request, res: express.Response): voi
                                 return;
                             }
                             console.log('user apartment populated');
-                            res.json({ ...res.locals, success: true, eventsInfo: populatedUserApartment.eventsInfo });
+                            res.json({
+                                ...res.locals,
+                                success: true,
+                                eventsInfo: populatedUserApartment.eventsInfo,
+                                newEventId: savedEvent._id,
+                            });
                         });
                 });
             });
