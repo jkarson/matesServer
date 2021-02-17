@@ -6,7 +6,6 @@ import {
     searchCode,
     requestToJoin,
     viewApartment,
-    logOutUser,
     cancelJoinRequest,
     leaveApartment,
 } from './api';
@@ -18,7 +17,6 @@ accountRouter.post('/createApartment', createApartment);
 accountRouter.post('/searchCode', searchCode);
 accountRouter.post('/requestToJoin', requestToJoin);
 accountRouter.post('/viewApartment', viewApartment);
-accountRouter.post('/logOutUser', logOutUser);
 accountRouter.post('/cancelJoinRequest', cancelJoinRequest);
 accountRouter.post('/leaveApartment', leaveApartment);
 export default accountRouter;

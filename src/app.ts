@@ -29,7 +29,7 @@ const port = process.env.PORT || 8080; // default port to listen
 
     app.use(router);
 
-    //note: this soon won't be localhost
+    //to do: this soon won't be localhost
     app.listen(port, () => {
         console.log(`server started at http://localhost:${port}`);
     });

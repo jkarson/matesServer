@@ -2,7 +2,6 @@ import express from 'express';
 import { Schema } from 'mongoose';
 import Apartment from '../../../objects/apartment/models/Apartment';
 import Event from '../../../objects/events/models/Event';
-import { EventType } from '../../../objects/events/types/EventType';
 
 const createEvent = (req: express.Request, res: express.Response): void => {
     const { apartmentId, newEvent, inviteeIds } = req.body;
@@ -13,7 +12,7 @@ const createEvent = (req: express.Request, res: express.Response): void => {
             res.json({ ...res.locals, success: false });
             return;
         }
-        inviteeIds.forEach((id: any) => {
+        inviteeIds.forEach((id: string) => {
             Apartment.findOne({ _id: id }, function (err, invitee) {
                 if (err) {
                     console.error(err);
@@ -23,21 +22,15 @@ const createEvent = (req: express.Request, res: express.Response): void => {
                     console.log('invitee not found');
                     return;
                 }
-                console.log('invitee found');
                 invitee.eventsInfo.invitations.push(savedEvent._id);
                 invitee.save(function (err) {
                     if (err) {
                         console.error(err);
                         return;
                     }
-                    console.log('event invitation saved on invitee');
                 });
             });
         });
-        console.log('event created');
-        console.log('event:');
-        console.log(savedEvent);
-        console.log('searching for user apartment');
         Apartment.findOne({ _id: apartmentId }, function (err, userApartment) {
             if (err) {
                 console.error(err);
@@ -49,18 +42,13 @@ const createEvent = (req: express.Request, res: express.Response): void => {
                 res.json({ ...res.locals, success: false });
                 return;
             }
-            console.log('user apartment found');
-            console.log('adding new event');
             userApartment.eventsInfo.events.push(savedEvent._id);
-            console.log('saving apartment');
             userApartment.save(function (err, savedApartment) {
                 if (err) {
                     console.error(err);
                     res.json({ ...res.locals, success: false });
                     return;
                 }
-                console.log('user apartment saved');
-                console.log('populating events');
                 savedApartment
                     .populate({
                         path: 'eventsInfo.events',
@@ -82,8 +70,6 @@ const createEvent = (req: express.Request, res: express.Response): void => {
                             res.json({ ...res.locals, success: false });
                             return;
                         }
-                        console.log('apartment populated:');
-                        console.log(populatedApartment);
                         res.json({
                             ...res.locals,
                             success: true,
@@ -109,8 +95,6 @@ const deleteEvent = (req: express.Request, res: express.Response): void => {
             res.json({ ...res.locals, success: false });
             return;
         }
-        console.log('event was deleted:');
-        console.log(deletedEvent);
         const { attendees, invitees, _id } = deletedEvent;
 
         deleteEventFromUserApartment(apartmentId, _id, res);
@@ -135,15 +119,15 @@ const deleteEventFromUserApartment = (
             res.json({ ...res.locals, success: false });
             return;
         }
-        console.log('user apartment found');
         const deletedEventIndex = userApartment.eventsInfo.events.findIndex(
             (id) => id.toString() === eventId.toString(),
         );
         if (deletedEventIndex === -1) {
             console.log('deleted event not found');
+            res.json({ ...res.locals, success: false });
+            return;
         } else {
             userApartment.eventsInfo.events.splice(deletedEventIndex, 1);
-            console.log('event id removed');
         }
         userApartment.save(function (err, savedUserApartment) {
             if (err) {
@@ -151,7 +135,6 @@ const deleteEventFromUserApartment = (
                 res.json({ ...res.locals, success: false });
                 return;
             }
-            console.log('user apartment saved');
             savedUserApartment
                 .populate({
                     path: 'eventsInfo.events',
@@ -173,7 +156,6 @@ const deleteEventFromUserApartment = (
                         res.json({ ...res.locals, success: false });
                         return;
                     }
-                    console.log('apartment populated');
                     res.json({ ...res.locals, success: true, eventsInfo: populatedApartment.eventsInfo });
                 });
         });
@@ -190,20 +172,17 @@ const deleteEventFromApartment = (apartmentId: Schema.Types.ObjectId, eventId: S
             console.log('non-user apartment not found');
             return;
         }
-        console.log('non-user apartment found');
         const deletedEventIndex = apartment.eventsInfo.events.findIndex((id) => id.toString() === eventId.toString());
         if (deletedEventIndex === -1) {
             console.log('deleted event not found');
         } else {
             apartment.eventsInfo.events.splice(deletedEventIndex, 1);
-            console.log('event id removed');
         }
         apartment.save(function (err) {
             if (err) {
                 console.error(err);
                 return;
             }
-            console.log('apartment successfully updated');
             return true;
         });
     });
@@ -222,8 +201,6 @@ const inviteFriendToEvent = (req: express.Request, res: express.Response): void 
             res.json({ ...res.locals, success: false });
             return;
         }
-        console.log('invitee apartment found');
-        console.log('looking for event');
         Event.findOne({ _id: eventId }, function (err, event) {
             if (err) {
                 console.error(err);
@@ -235,24 +212,20 @@ const inviteFriendToEvent = (req: express.Request, res: express.Response): void 
                 res.json({ ...res.locals, success: false });
                 return;
             }
-            console.log('event found');
             event.invitees.push(inviteeApartment._id);
             inviteeApartment.eventsInfo.invitations.push(event._id);
-            console.log('invitee added to event, and event added to invitee');
             event.save(function (err) {
                 if (err) {
                     console.error(err);
                     res.json({ ...res.locals, success: false });
                     return;
                 }
-                console.log('event saved');
                 inviteeApartment.save(function (err) {
                     if (err) {
                         console.error(err);
                         res.json({ ...res.locals, success: false });
                         return;
                     }
-                    console.log('invitee apartment saved');
                     Apartment.findOne({ _id: apartmentId }, function (err, userApartment) {
                         if (err) {
                             console.error(err);
@@ -264,7 +237,6 @@ const inviteFriendToEvent = (req: express.Request, res: express.Response): void 
                             res.json({ ...res.locals, success: false });
                             return;
                         }
-                        console.log('user apartment found');
                         userApartment
                             .populate({
                                 path: 'eventsInfo.events',
@@ -286,8 +258,6 @@ const inviteFriendToEvent = (req: express.Request, res: express.Response): void 
                                     res.json({ ...res.locals, success: false });
                                     return;
                                 }
-                                console.log('apartment populated');
-                                console.log(populatedApartment);
                                 res.json({ ...res.locals, success: true, eventsInfo: populatedApartment.eventsInfo });
                             });
                     });
@@ -310,7 +280,6 @@ const removeEventInvitation = (req: express.Request, res: express.Response): voi
             res.json({ ...res.locals, success: false });
             return;
         }
-        console.log('event found');
         Apartment.findOne({ _id: inviteeId }, function (err, inviteeApartment) {
             if (err) {
                 console.error(err);
@@ -322,39 +291,31 @@ const removeEventInvitation = (req: express.Request, res: express.Response): voi
                 res.json({ ...res.locals, success: false });
                 return;
             }
-            console.log('invitee apartment found');
             const eventInvitationIndex = inviteeApartment.eventsInfo.invitations.findIndex(
                 (id) => id.toString() === event._id.toString(),
             );
-            if (eventInvitationIndex === -1) {
-                console.log('event not found on invitee');
+            const inviteeIndex = event.invitees.findIndex((id) => id.toString() === inviteeApartment._id.toString());
+
+            if (eventInvitationIndex === -1 || inviteeIndex === -1) {
+                console.log('event not found on invitee or vice versa');
+                res.json({ ...res.locals, success: false });
+                return;
             } else {
                 inviteeApartment.eventsInfo.invitations.splice(eventInvitationIndex, 1);
-                console.log('event removed from invitee');
-            }
-            const inviteeIndex = event.invitees.findIndex((id) => id.toString() === inviteeApartment._id.toString());
-            if (inviteeIndex === -1) {
-                console.log('invitee not found on event');
-            } else {
                 event.invitees.splice(inviteeIndex, 1);
-                console.log('invitee removed from event');
             }
-            inviteeApartment.save(function (err, savedInviteeApartment) {
+            inviteeApartment.save(function (err) {
                 if (err) {
                     console.error(err);
                     res.json({ ...res.locals, success: false });
                     return;
                 }
-                console.log('invitee apartment saved:');
-                console.log(savedInviteeApartment);
-                event.save(function (err, savedEvent) {
+                event.save(function (err) {
                     if (err) {
                         console.error(err);
                         res.json({ ...res.locals, success: false });
                         return;
                     }
-                    console.log('event saved:');
-                    console.log(savedEvent);
                     Apartment.findOne({ _id: apartmentId })
                         .populate({
                             path: 'eventsInfo.events',
@@ -381,8 +342,6 @@ const removeEventInvitation = (req: express.Request, res: express.Response): voi
                                 res.json({ ...res.locals, success: false });
                                 return;
                             }
-                            console.log('user apartment saved and populated:');
-                            console.log(populatedUserApartment);
                             res.json({ ...res.locals, success: true, eventsInfo: populatedUserApartment.eventsInfo });
                         });
                 });
@@ -404,7 +363,6 @@ const acceptEventInvitation = (req: express.Request, res: express.Response): voi
             res.json({ ...res.locals, success: false });
             return;
         }
-        console.log('event found');
         Apartment.findOne({ _id: apartmentId }, function (err, userApartment) {
             if (err) {
                 console.error(err);
@@ -416,22 +374,17 @@ const acceptEventInvitation = (req: express.Request, res: express.Response): voi
                 res.json({ ...res.locals, success: false });
                 return;
             }
-            console.log('user apartment found');
             const userApartmentIndex = event.invitees.findIndex((id) => id.toString() === userApartment._id.toString());
-            if (userApartmentIndex === -1) {
-                console.log('user apartment not found in event invitee list');
-            } else {
-                event.invitees.splice(userApartmentIndex, 1);
-                console.log('user apartment removed from invitee list');
-            }
             const eventInvitationIndex = userApartment.eventsInfo.invitations.findIndex(
                 (id) => id.toString() === event._id.toString(),
             );
-            if (eventInvitationIndex === -1) {
-                console.log('event not found in invitations list');
+            if (userApartmentIndex === -1 || eventInvitationIndex === -1) {
+                console.log('user apartment not found on event invitee list or vice versa');
+                res.json({ ...res.locals, success: false });
+                return;
             } else {
+                event.invitees.splice(userApartmentIndex, 1);
                 userApartment.eventsInfo.invitations.splice(eventInvitationIndex, 1);
-                console.log('event removed from invitations list');
             }
 
             event.attendees.push(userApartment._id);
@@ -442,14 +395,12 @@ const acceptEventInvitation = (req: express.Request, res: express.Response): voi
                     res.json({ ...res.locals, success: false });
                     return;
                 }
-                console.log('event saved');
                 userApartment.save(function (err, savedUserApartment) {
                     if (err) {
                         console.error(err);
                         res.json({ ...res.locals, success: false });
                         return;
                     }
-                    console.log('user apartment saved');
                     savedUserApartment
                         .populate({
                             path: 'eventsInfo.events',
@@ -471,7 +422,6 @@ const acceptEventInvitation = (req: express.Request, res: express.Response): voi
                                 res.json({ ...res.locals, success: false });
                                 return;
                             }
-                            console.log('user apartment populated');
                             res.json({
                                 ...res.locals,
                                 success: true,
@@ -498,7 +448,6 @@ const rejectEventInvitation = (req: express.Request, res: express.Response): voi
             res.json({ ...res.locals, success: false });
             return;
         }
-        console.log('event found');
         Apartment.findOne({ _id: apartmentId }, function (err, userApartment) {
             if (err) {
                 console.error(err);
@@ -510,26 +459,20 @@ const rejectEventInvitation = (req: express.Request, res: express.Response): voi
                 res.json({ ...res.locals, success: false });
                 return;
             }
-            console.log('user apartment found');
 
             const apartmentInvitationIndex = event.invitees.findIndex(
                 (id) => id.toString() === userApartment._id.toString(),
             );
-            if (apartmentInvitationIndex === -1) {
-                console.log('user apartment not found on event');
-            } else {
-                event.invitees.splice(apartmentInvitationIndex, 1);
-                console.log('user apartment deleted from invitees');
-            }
-
             const eventIndex = userApartment.eventsInfo.invitations.findIndex(
                 (id) => id.toString() === event._id.toString(),
             );
-            if (eventIndex === -1) {
-                console.log('event not found on user');
+            if (apartmentInvitationIndex === -1 || eventIndex === -1) {
+                console.log('user apartment not found on event or vice versa');
+                res.json({ ...res.locals, success: false });
+                return;
             } else {
+                event.invitees.splice(apartmentInvitationIndex, 1);
                 userApartment.eventsInfo.invitations.splice(eventIndex, 1);
-                console.log('event deleted from apartment');
             }
 
             event.save(function (err) {
@@ -538,7 +481,6 @@ const rejectEventInvitation = (req: express.Request, res: express.Response): voi
                     res.json({ ...res.locals, success: false });
                     return;
                 }
-                console.log('event saved');
                 userApartment.save(function (err, savedUserApartment) {
                     if (err) {
                         console.error(err);
@@ -566,7 +508,6 @@ const rejectEventInvitation = (req: express.Request, res: express.Response): voi
                                 res.json({ ...res.locals, success: false });
                                 return;
                             }
-                            console.log('user apartment populated');
                             res.json({ ...res.locals, success: true, eventsInfo: populatedUserApartment.eventsInfo });
                         });
                 });
@@ -588,7 +529,6 @@ const leaveEvent = (req: express.Request, res: express.Response): void => {
             res.json({ ...res.locals, success: false });
             return;
         }
-        console.log('event found');
         Apartment.findOne({ _id: apartmentId }, function (err, userApartment) {
             if (err) {
                 console.error(err);
@@ -600,25 +540,19 @@ const leaveEvent = (req: express.Request, res: express.Response): void => {
                 res.json({ ...res.locals, success: false });
                 return;
             }
-            console.log('user apartment found');
             const userApartmentIndex = event.attendees.findIndex(
                 (id) => id.toString() === userApartment._id.toString(),
             );
-            if (userApartmentIndex === -1) {
-                console.log('user apartment not found on event');
-            } else {
-                event.attendees.splice(userApartmentIndex, 1);
-                console.log('user apartment deleted from event');
-            }
-
             const eventIndex = userApartment.eventsInfo.events.findIndex(
                 (id) => id.toString() === event._id.toString(),
             );
-            if (eventIndex === -1) {
-                console.log('event not found on user');
+            if (userApartmentIndex === -1 || eventIndex === -1) {
+                console.log('user apartment not found on event or vice versa');
+                res.json({ ...res.locals, success: false });
+                return;
             } else {
+                event.attendees.splice(userApartmentIndex, 1);
                 userApartment.eventsInfo.events.splice(eventIndex, 1);
-                console.log('event deleted from user apartment');
             }
 
             event.save(function (err) {
@@ -627,14 +561,12 @@ const leaveEvent = (req: express.Request, res: express.Response): void => {
                     res.json({ ...res.locals, success: false });
                     return;
                 }
-                console.log('event saved');
                 userApartment.save(function (err, savedUserApartment) {
                     if (err) {
                         console.error(err);
                         res.json({ ...res.locals, success: false });
                         return;
                     }
-                    console.log('user apartment saved');
                     savedUserApartment
                         .populate({
                             path: 'eventsInfo.events',
@@ -656,7 +588,6 @@ const leaveEvent = (req: express.Request, res: express.Response): void => {
                                 res.json({ ...res.locals, success: false });
                                 return;
                             }
-                            console.log('user apartment populated');
                             res.json({ ...res.locals, success: true, eventsInfo: populatedUserApartment.eventsInfo });
                         });
                 });
@@ -678,7 +609,6 @@ const removeEventAttendee = async (req: express.Request, res: express.Response):
             res.json({ ...res.locals, success: false });
             return;
         }
-        console.log('event found');
         Apartment.findOne({ _id: attendeeId }, function (err, attendeeApartment) {
             if (err) {
                 console.error(err);
@@ -690,39 +620,33 @@ const removeEventAttendee = async (req: express.Request, res: express.Response):
                 res.json({ ...res.locals, success: false });
                 return;
             }
-            console.log('attendee apartment found');
 
             const eventIndex = attendeeApartment.eventsInfo.events.findIndex(
                 (id) => id.toString() === event._id.toString(),
             );
-            if (eventIndex === -1) {
-                console.log('event not found on attendee');
+            const attendeeIndex = event.attendees.findIndex((id) => id.toString() === attendeeApartment._id.toString());
+
+            if (eventIndex === -1 || attendeeIndex === -1) {
+                console.log('event not found on attendee or vice versa');
+                res.json({ ...res.locals, success: false });
+                return;
             } else {
                 attendeeApartment.eventsInfo.events.splice(eventIndex, 1);
-                console.log('event removed from attendee');
+                event.attendees.splice(attendeeIndex, 1);
             }
 
-            const attendeeIndex = event.attendees.findIndex((id) => id.toString() === attendeeApartment._id.toString());
-            if (attendeeIndex === -1) {
-                console.log('attendee not found on event');
-            } else {
-                event.attendees.splice(attendeeIndex, 1);
-                console.log('attendee removed from event');
-            }
             attendeeApartment.save(function (err) {
                 if (err) {
                     console.error(err);
                     res.json({ ...res.locals, success: false });
                     return;
                 }
-                console.log('attendee apartment saved');
                 event.save(function (err) {
                     if (err) {
                         console.error(err);
                         res.json({ ...res.locals, success: false });
                         return;
                     }
-                    console.log('event saved');
                     Apartment.findOne({ _id: apartmentId })
                         .populate({
                             path: 'eventsInfo.events',
@@ -749,7 +673,6 @@ const removeEventAttendee = async (req: express.Request, res: express.Response):
                                 res.json({ ...res.locals, success: false });
                                 return;
                             }
-                            console.log('user apartment populated');
                             res.json({ ...res.locals, success: true, eventsInfo: populatedUserApartment.eventsInfo });
                         });
                 });

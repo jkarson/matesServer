@@ -29,8 +29,6 @@ const getAccountInfo = (req: express.Request, res: express.Response): void => {
             } else if (!result) {
                 console.error('User Not Found');
             } else {
-                console.log('found and populated user');
-                console.log(result);
                 const resultApartments = (result.apartments as unknown) as ApartmentType[];
 
                 const formattedApartments = resultApartments.map((apartment) => {
@@ -61,9 +59,6 @@ const getAccountInfo = (req: express.Request, res: express.Response): void => {
                     selectedApartmentName = selectedApartment.profile.name;
                 }
 
-                console.log('formatted apartments:');
-                console.log(formattedApartments);
-
                 res.json({
                     ...res.locals,
                     user: {
@@ -81,7 +76,6 @@ const getAccountInfo = (req: express.Request, res: express.Response): void => {
 const createApartment = (req: express.Request, res: express.Response): void => {
     const { apartmentName, address, quote, tenantName, age, email, number } = req.body;
     const user = req.user as UserType;
-    console.log(user);
     const newApartment: ApartmentType = new Apartment({
         tenants: [
             {
@@ -120,26 +114,20 @@ const createApartment = (req: express.Request, res: express.Response): void => {
         },
     });
     newApartment.profile.code = sh.unique(newApartment.id);
-    console.log(newApartment);
     newApartment.save(function (err, apartment) {
         if (err || !apartment) {
             console.error(err || 'Unknown Error: Could not save new apartment');
             res.json({ ...res.locals, success: false });
             return;
         }
-        console.log('new apartment saved');
-        console.log('adding apartment to user');
         user.apartments.push(apartment._id);
-        console.log('attempting to save user');
         user.save(function (err, updatedUser) {
             if (err || !updatedUser) {
                 console.error(err || 'Unknown Error: Could not save updated user');
                 res.json({ ...res.locals, success: false });
                 return;
             }
-            console.log('user saved');
             res.locals.success = true;
-            console.log('attempting user lookup');
             getAccountInfo(req, res);
         });
     });
@@ -240,14 +228,8 @@ const viewApartment = (req: express.Request, res: express.Response): void => {
     });
 };
 
-const logOutUser = (req: express.Request, res: express.Response): void => {
-    req.logout();
-    res.json({ success: true });
-};
-
 const cancelJoinRequest = (req: express.Request, res: express.Response): void => {
     const { userId, requestedApartmentId } = req.body;
-    console.log(req.body);
     User.findOne({ _id: userId }, function (err, user) {
         if (err) {
             console.error(err);
@@ -259,7 +241,6 @@ const cancelJoinRequest = (req: express.Request, res: express.Response): void =>
             res.json({ ...res.locals, success: false });
             return;
         }
-        console.log('user found');
         Apartment.findOne({ _id: requestedApartmentId }, function (err, requestedApartment) {
             if (err) {
                 console.error(err);
@@ -271,26 +252,20 @@ const cancelJoinRequest = (req: express.Request, res: express.Response): void =>
                 res.json({ ...res.locals, success: false });
                 return;
             }
-            console.log('requested apartment found');
 
             const userIndex = requestedApartment.profile.requests.findIndex(
                 (id) => id.toString() === user._id.toString(),
             );
-            if (userIndex === -1) {
-                console.log('user request not found on requested apartment');
-            } else {
-                requestedApartment.profile.requests.splice(userIndex, 1);
-                console.log('user request removed from requested apartment');
-            }
-
             const joinRequestIndex = user.requestedApartments.findIndex(
                 (id) => id.toString() === requestedApartment._id.toString(),
             );
-            if (joinRequestIndex === -1) {
-                console.log('requested apartment not found on user');
+            if (userIndex === -1 || joinRequestIndex === -1) {
+                console.log('user request not found on requested apartment or vice versa');
+                res.json({ ...res.locals, success: false });
+                return;
             } else {
+                requestedApartment.profile.requests.splice(userIndex, 1);
                 user.requestedApartments.splice(joinRequestIndex, 1);
-                console.log('apartment removed from user requests');
             }
             requestedApartment.save(function (err) {
                 if (err) {
@@ -325,7 +300,6 @@ const leaveApartment = (req: express.Request, res: express.Response): void => {
             res.json({ ...res.locals, success: false });
             return;
         }
-        console.log('user found');
         Apartment.findOne({ _id: apartmentId }, function (err, userApartment) {
             if (err) {
                 console.error(err);
@@ -337,31 +311,21 @@ const leaveApartment = (req: express.Request, res: express.Response): void => {
                 res.json({ ...res.locals, success: false });
                 return;
             }
-            console.log('user apartment found');
-
             const apartmentIndex = user.apartments.findIndex((id) => id.toString() === userApartment._id.toString());
-            if (apartmentIndex === -1) {
-                console.log('apartment not found on user');
-            } else {
-                user.apartments.splice(apartmentIndex, 1);
-                console.log('apartment deleted from user');
-            }
-
             const userTenantIndex = userApartment.tenants.findIndex(
                 (tenant) => tenant.userId.toString() === user._id.toString(),
             );
-            if (userTenantIndex === -1) {
-                console.log('user not found on apartment');
+            if (apartmentIndex === -1 || userTenantIndex === -1) {
+                console.log('apartment not found on user or vice versa');
+                res.json({ ...res.locals, success: false });
+                return;
             } else {
+                user.apartments.splice(apartmentIndex, 1);
                 userApartment.tenants.splice(userTenantIndex, 1);
-                console.log('user deleted from apartment');
             }
 
             if (user.selectedApartment && user.selectedApartment.toString() === userApartment._id.toString()) {
-                console.log('HERE');
                 user.selectedApartment = undefined;
-            } else {
-                console.log('THERE');
             }
 
             userApartment.save(function (err, savedUserApartment) {
@@ -370,14 +334,12 @@ const leaveApartment = (req: express.Request, res: express.Response): void => {
                     res.json({ ...res.locals, success: false });
                     return;
                 }
-                console.log('user apartment saved');
                 user.save(function (err) {
                     if (err) {
                         console.error(err);
                         res.json({ ...res.locals, success: false });
                         return;
                     }
-                    console.log('user saved');
                     res.locals.success = true;
                     getAccountInfo(req, res);
                     deleteApartmentIfEmpty(savedUserApartment);
@@ -387,7 +349,7 @@ const leaveApartment = (req: express.Request, res: express.Response): void => {
     });
 };
 
-const deleteApartmentIfEmpty = (apartment: ApartmentType): void => {
+export const deleteApartmentIfEmpty = (apartment: ApartmentType): void => {
     if (apartment.tenants.length === 0) {
         Apartment.findOneAndDelete({ _id: apartment._id }, function (err, result) {
             if (err) {
@@ -398,15 +360,12 @@ const deleteApartmentIfEmpty = (apartment: ApartmentType): void => {
                 console.log('apartment not found for deletion');
                 return;
             }
-            console.log('apartment deleted');
             deletePointersToDeletedApartment(result);
         });
     }
 };
 
 const deletePointersToDeletedApartment = (apartment: ApartmentType) => {
-    console.log('deleted apartment:');
-    console.log(apartment);
     apartment.profile.requests.forEach((requesterId) => {
         User.findOne({ _id: requesterId }, function (err, user) {
             if (err) {
@@ -424,13 +383,10 @@ const deletePointersToDeletedApartment = (apartment: ApartmentType) => {
                 console.log('request not found on user');
             } else {
                 user.requestedApartments.splice(apartmentIndex, 1);
-                console.log('join request deleted from user');
             }
             user.save(function (err) {
                 if (err) {
                     console.error(err);
-                } else {
-                    console.log('user saved');
                 }
             });
         });
@@ -452,13 +408,10 @@ const deletePointersToDeletedApartment = (apartment: ApartmentType) => {
                 console.log('apartment not found on friend');
             } else {
                 friend.friendsInfo.friends.splice(friendIndex, 1);
-                console.log('apartment deleted from friend');
             }
             friend.save(function (err) {
                 if (err) {
                     console.error(err);
-                } else {
-                    console.log('friend saved');
                 }
             });
         });
@@ -480,13 +433,10 @@ const deletePointersToDeletedApartment = (apartment: ApartmentType) => {
                 console.log('apartment not found on requester');
             } else {
                 requester.friendsInfo.outgoingRequests.splice(apartmentIndex, 1);
-                console.log('apartment removed from requester');
             }
             requester.save(function (err) {
                 if (err) {
                     console.error(err);
-                } else {
-                    console.log('requester saved');
                 }
             });
         });
@@ -508,26 +458,14 @@ const deletePointersToDeletedApartment = (apartment: ApartmentType) => {
                 console.log('apartment not found on requested');
             } else {
                 requested.friendsInfo.incomingRequests.splice(apartmentIndex, 1);
-                console.log('apartment deleted off of requested');
             }
             requested.save(function (err) {
                 if (err) {
                     console.error(err);
-                } else {
-                    console.log('apartment deleted off of requested');
                 }
             });
         });
     });
 };
 
-export {
-    getAccountInfo,
-    createApartment,
-    searchCode,
-    requestToJoin,
-    viewApartment,
-    logOutUser,
-    cancelJoinRequest,
-    leaveApartment,
-};
+export { getAccountInfo, createApartment, searchCode, requestToJoin, viewApartment, cancelJoinRequest, leaveApartment };

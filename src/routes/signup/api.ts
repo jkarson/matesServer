@@ -2,10 +2,10 @@ import express from 'express';
 import { Schema } from 'mongoose';
 import User from '../../objects/user/models/User';
 import bcrypt from 'bcrypt';
+
 const saltRounds = 12;
 
 const signup = (req: express.Request, res: express.Response): void => {
-    console.log(req.body);
     const { username, password } = req.body;
     bcrypt.hash(password, saltRounds, (error, hash) => {
         if (error) {
@@ -27,8 +27,6 @@ const signup = (req: express.Request, res: express.Response): void => {
                         requestedApartments: requestedApartments,
                         selectedApartment: null,
                     });
-                    console.log('new user:');
-                    console.log(newUser);
                     newUser
                         .save()
                         .then((newUser) => {
@@ -48,11 +46,6 @@ const signup = (req: express.Request, res: express.Response): void => {
         });
     });
 };
-
-/*
-
-
-*/
 
 const checkUsernameAvailability = (req: express.Request, res: express.Response): void => {
     const { username } = req.body;

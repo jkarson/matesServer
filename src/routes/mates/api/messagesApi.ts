@@ -3,10 +3,6 @@ import Apartment from '../../../objects/apartment/models/Apartment';
 
 const postNewMessage = (req: express.Request, res: express.Response): void => {
     const { apartmentId, ...message } = req.body;
-    console.log(apartmentId);
-    console.log(message);
-    console.log(message.time);
-    console.log(typeof message.time);
     Apartment.findOne({ _id: apartmentId }, function (err, apartment) {
         if (err) {
             console.error(err);

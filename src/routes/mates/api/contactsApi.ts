@@ -14,7 +14,6 @@ const addNewContact = (req: express.Request, res: express.Response): void => {
             res.json({ ...res.locals, success: false });
             return;
         }
-        console.log('user apartment found');
         apartment.manuallyAddedContacts.push(contact);
         apartment.save(function (err, resultApartment) {
             if (err) {
@@ -48,8 +47,6 @@ const deleteContact = (req: express.Request, res: express.Response): void => {
             return;
         } else {
             apartment.manuallyAddedContacts.splice(deletionIndex, 1);
-            console.log('contact deleted');
-
             apartment.save(function (err, resultApartment) {
                 if (err) {
                     console.error(err);
