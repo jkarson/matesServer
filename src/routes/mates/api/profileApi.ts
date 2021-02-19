@@ -4,6 +4,10 @@ import { TenantType } from '../../../objects/tenant/types/TenantType';
 import User from '../../../objects/user/models/User';
 
 const updateApartmentProfile = (req: express.Request, res: express.Response): void => {
+    if (!res.locals.authenticated) {
+        res.json({ ...res.locals });
+        return;
+    }
     const { apartmentId, name, address, quote } = req.body;
     Apartment.findOne({ _id: apartmentId }, function (err, apartment) {
         if (err) {
@@ -31,6 +35,10 @@ const updateApartmentProfile = (req: express.Request, res: express.Response): vo
 };
 
 const updateTenantProfile = (req: express.Request, res: express.Response): void => {
+    if (!res.locals.authenticated) {
+        res.json({ ...res.locals });
+        return;
+    }
     const { apartmentId, ...tenantInput } = req.body;
     const inputTenant = tenantInput as TenantType;
     Apartment.findOne({ _id: apartmentId }, function (err, apartment) {
@@ -66,6 +74,10 @@ const updateTenantProfile = (req: express.Request, res: express.Response): void 
 };
 
 const acceptJoinRequest = (req: express.Request, res: express.Response): void => {
+    if (!res.locals.authenticated) {
+        res.json({ ...res.locals });
+        return;
+    }
     const { apartmentId, joineeId } = req.body;
     Apartment.findOne({ _id: apartmentId }, function (err, apartment) {
         if (err) {
@@ -141,6 +153,10 @@ const acceptJoinRequest = (req: express.Request, res: express.Response): void =>
 };
 
 const deleteJoinRequest = (req: express.Request, res: express.Response): void => {
+    if (!res.locals.authenticated) {
+        res.json({ ...res.locals });
+        return;
+    }
     const { apartmentId, requesteeId } = req.body;
     User.findOne({ _id: requesteeId }, function (err, user) {
         if (err) {

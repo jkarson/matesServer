@@ -6,6 +6,10 @@ import { UserType } from '../../objects/user/types/UserType';
 import { deleteApartmentIfEmpty } from '../account/api';
 
 const getAccountSettingsInfo = (req: express.Request, res: express.Response): void => {
+    if (!res.locals.authenticated) {
+        res.json({ ...res.locals });
+        return;
+    }
     const user = req.user as UserType;
     User.findOne({ _id: user._id })
         .populate('selectedApartment', 'profile.name')
@@ -30,6 +34,10 @@ const getAccountSettingsInfo = (req: express.Request, res: express.Response): vo
 };
 
 const deleteAccount = (req: express.Request, res: express.Response): void => {
+    if (!res.locals.authenticated) {
+        res.json({ ...res.locals });
+        return;
+    }
     const { userId } = req.body;
     User.findOne({ _id: userId }, function (err, user) {
         if (err) {
@@ -81,6 +89,10 @@ const deleteAccount = (req: express.Request, res: express.Response): void => {
 };
 
 const logOutUser = (req: express.Request, res: express.Response): void => {
+    if (!res.locals.authenticated) {
+        res.json({ ...res.locals });
+        return;
+    }
     req.logout();
     res.json({ success: true });
 };

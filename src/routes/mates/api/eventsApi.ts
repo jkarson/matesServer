@@ -4,6 +4,10 @@ import Apartment from '../../../objects/apartment/models/Apartment';
 import Event from '../../../objects/events/models/Event';
 
 const createEvent = (req: express.Request, res: express.Response): void => {
+    if (!res.locals.authenticated) {
+        res.json({ ...res.locals });
+        return;
+    }
     const { apartmentId, newEvent, inviteeIds } = req.body;
     const event = new Event({ ...newEvent, invitees: inviteeIds });
     event.save(function (err, savedEvent) {
@@ -83,6 +87,10 @@ const createEvent = (req: express.Request, res: express.Response): void => {
 };
 
 const deleteEvent = (req: express.Request, res: express.Response): void => {
+    if (!res.locals.authenticated) {
+        res.json({ ...res.locals });
+        return;
+    }
     const { apartmentId, eventId } = req.body;
     Event.findOneAndDelete({ _id: eventId }, function (err, deletedEvent) {
         if (err) {
@@ -189,6 +197,10 @@ const deleteEventFromApartment = (apartmentId: Schema.Types.ObjectId, eventId: S
 };
 
 const inviteFriendToEvent = (req: express.Request, res: express.Response): void => {
+    if (!res.locals.authenticated) {
+        res.json({ ...res.locals });
+        return;
+    }
     const { apartmentId, eventId, inviteeId } = req.body;
     Apartment.findOne({ _id: inviteeId }, function (err, inviteeApartment) {
         if (err) {
@@ -268,6 +280,10 @@ const inviteFriendToEvent = (req: express.Request, res: express.Response): void 
 };
 
 const removeEventInvitation = (req: express.Request, res: express.Response): void => {
+    if (!res.locals.authenticated) {
+        res.json({ ...res.locals });
+        return;
+    }
     const { apartmentId, eventId, inviteeId } = req.body;
     Event.findOne({ _id: eventId }, function (err, event) {
         if (err) {
@@ -351,6 +367,10 @@ const removeEventInvitation = (req: express.Request, res: express.Response): voi
 };
 
 const acceptEventInvitation = (req: express.Request, res: express.Response): void => {
+    if (!res.locals.authenticated) {
+        res.json({ ...res.locals });
+        return;
+    }
     const { apartmentId, eventId } = req.body;
     Event.findOne({ _id: eventId }, function (err, event) {
         if (err) {
@@ -436,6 +456,10 @@ const acceptEventInvitation = (req: express.Request, res: express.Response): voi
 };
 
 const rejectEventInvitation = (req: express.Request, res: express.Response): void => {
+    if (!res.locals.authenticated) {
+        res.json({ ...res.locals });
+        return;
+    }
     const { apartmentId, eventId } = req.body;
     Event.findOne({ _id: eventId }, function (err, event) {
         if (err) {
@@ -517,6 +541,10 @@ const rejectEventInvitation = (req: express.Request, res: express.Response): voi
 };
 
 const leaveEvent = (req: express.Request, res: express.Response): void => {
+    if (!res.locals.authenticated) {
+        res.json({ ...res.locals });
+        return;
+    }
     const { apartmentId, eventId } = req.body;
     Event.findOne({ _id: eventId }, function (err, event) {
         if (err) {
@@ -597,6 +625,10 @@ const leaveEvent = (req: express.Request, res: express.Response): void => {
 };
 
 const removeEventAttendee = async (req: express.Request, res: express.Response): Promise<void> => {
+    if (!res.locals.authenticated) {
+        res.json({ ...res.locals });
+        return;
+    }
     const { apartmentId, eventId, attendeeId } = req.body;
     Event.findOne({ _id: eventId }, function (err, event) {
         if (err) {

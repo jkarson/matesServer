@@ -5,6 +5,10 @@ import { BillType } from '../../../objects/bills/types/BillType';
 import mongoose from 'mongoose';
 
 const createBillGenerator = (req: express.Request, res: express.Response): void => {
+    if (!res.locals.authenticated) {
+        res.json({ ...res.locals });
+        return;
+    }
     const { apartmentId, newBillGenerator, generatedBills } = req.body;
     Apartment.findOne({ _id: apartmentId }, function (err, userApartment) {
         if (err) {
@@ -39,6 +43,10 @@ const createBillGenerator = (req: express.Request, res: express.Response): void 
 };
 
 const updateAmountsOwed = (req: express.Request, res: express.Response): void => {
+    if (!res.locals.authenticated) {
+        res.json({ ...res.locals });
+        return;
+    }
     const { apartmentId, billId, amountsOwed } = req.body;
     Apartment.findOne({ _id: apartmentId }, function (err, userApartment) {
         if (err) {
@@ -70,6 +78,10 @@ const updateAmountsOwed = (req: express.Request, res: express.Response): void =>
 };
 
 const deleteBill = (req: express.Request, res: express.Response): void => {
+    if (!res.locals.authenticated) {
+        res.json({ ...res.locals });
+        return;
+    }
     const { apartmentId, billId } = req.body;
     Apartment.findOne({ _id: apartmentId }, function (err, userApartment) {
         if (err) {
@@ -101,6 +113,10 @@ const deleteBill = (req: express.Request, res: express.Response): void => {
 };
 
 const deleteBillSeries = (req: express.Request, res: express.Response): void => {
+    if (!res.locals.authenticated) {
+        res.json({ ...res.locals });
+        return;
+    }
     const { apartmentId, billGeneratorId } = req.body;
     Apartment.findOne({ _id: apartmentId }, function (err, userApartment) {
         if (err) {
@@ -141,6 +157,10 @@ const deleteBillSeries = (req: express.Request, res: express.Response): void => 
 };
 
 const addBillsAndUpdateBillGenerators = (req: express.Request, res: express.Response): void => {
+    if (!res.locals.authenticated) {
+        res.json({ ...res.locals });
+        return;
+    }
     const { updatedThrough, newBills, apartmentId } = req.body;
     Apartment.findOne({ _id: apartmentId }, function (err, userApartment) {
         if (err) {
@@ -170,6 +190,10 @@ const addBillsAndUpdateBillGenerators = (req: express.Request, res: express.Resp
 };
 
 const deleteOldBills = (req: express.Request, res: express.Response): void => {
+    if (!res.locals.authenticated) {
+        res.json({ ...res.locals });
+        return;
+    }
     const { apartmentId, billDeletionIds } = req.body;
     Apartment.findOne({ _id: apartmentId }, function (err, userApartment) {
         if (err) {

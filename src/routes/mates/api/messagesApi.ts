@@ -2,6 +2,10 @@ import express from 'express';
 import Apartment from '../../../objects/apartment/models/Apartment';
 
 const postNewMessage = (req: express.Request, res: express.Response): void => {
+    if (!res.locals.authenticated) {
+        res.json({ ...res.locals });
+        return;
+    }
     const { apartmentId, ...message } = req.body;
     Apartment.findOne({ _id: apartmentId }, function (err, apartment) {
         if (err) {
@@ -30,6 +34,10 @@ const postNewMessage = (req: express.Request, res: express.Response): void => {
 };
 
 const deleteMessage = (req: express.Request, res: express.Response): void => {
+    if (!res.locals.authenticated) {
+        res.json({ ...res.locals });
+        return;
+    }
     const { apartmentId, messageId } = req.body;
     Apartment.findOne({ _id: apartmentId }, function (err, apartment) {
         if (err) {

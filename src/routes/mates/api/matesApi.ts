@@ -3,6 +3,10 @@ import Apartment from '../../../objects/apartment/models/Apartment';
 import { UserType } from '../../../objects/user/types/UserType';
 
 const getMatesUser = (req: express.Request, res: express.Response): void => {
+    if (!res.locals.authenticated) {
+        res.json({ ...res.locals });
+        return;
+    }
     const user = req.user as UserType;
     const selectedApartment = user.selectedApartment;
     if (!selectedApartment) {

@@ -2,6 +2,10 @@ import express from 'express';
 import Apartment from '../../../objects/apartment/models/Apartment';
 
 const searchCodeFriends = (req: express.Request, res: express.Response): void => {
+    if (!res.locals.authenticated) {
+        res.json({ ...res.locals });
+        return;
+    }
     const { apartmentId, code } = req.body;
     Apartment.findOne({ _id: apartmentId }, function (err, userApartment) {
         if (err) {
@@ -67,6 +71,10 @@ const searchCodeFriends = (req: express.Request, res: express.Response): void =>
 };
 
 const sendFriendRequest = (req: express.Request, res: express.Response): void => {
+    if (!res.locals.authenticated) {
+        res.json({ ...res.locals });
+        return;
+    }
     const { userApartmentId, requesteeApartmentId } = req.body;
     Apartment.findOne({ _id: userApartmentId }, function (err, userApartment) {
         if (err) {
@@ -124,6 +132,10 @@ const sendFriendRequest = (req: express.Request, res: express.Response): void =>
 };
 
 const acceptFriendRequest = (req: express.Request, res: express.Response): void => {
+    if (!res.locals.authenticated) {
+        res.json({ ...res.locals });
+        return;
+    }
     const { userApartmentId, friendApartmentId } = req.body;
     Apartment.findOne({ _id: userApartmentId }, function (err, userApartment) {
         if (err) {
@@ -208,6 +220,10 @@ const acceptFriendRequest = (req: express.Request, res: express.Response): void 
 };
 
 const deleteIncomingFriendRequest = (req: express.Request, res: express.Response): void => {
+    if (!res.locals.authenticated) {
+        res.json({ ...res.locals });
+        return;
+    }
     const { userApartmentId, requestApartmentId } = req.body;
     Apartment.findOne({ _id: requestApartmentId }, function (err, requestingApartment) {
         if (err) {
@@ -284,6 +300,10 @@ const deleteIncomingFriendRequest = (req: express.Request, res: express.Response
 };
 
 const deleteOutgoingFriendRequest = (req: express.Request, res: express.Response): void => {
+    if (!res.locals.authenticated) {
+        res.json({ ...res.locals });
+        return;
+    }
     const { userApartmentId, requestApartmentId } = req.body;
     Apartment.findOne({ _id: requestApartmentId }, function (err, requestedApartment) {
         if (err) {
@@ -362,6 +382,10 @@ const deleteOutgoingFriendRequest = (req: express.Request, res: express.Response
 };
 
 const deleteFriend = (req: express.Request, res: express.Response): void => {
+    if (!res.locals.authenticated) {
+        res.json({ ...res.locals });
+        return;
+    }
     const { apartmentId, friendApartmentId } = req.body;
     Apartment.findOne({ _id: friendApartmentId }, function (err, friendApartment) {
         if (err) {

@@ -6,8 +6,8 @@ function authenticateUser(req: Request, res: Response, next: NextFunction): void
         res.locals.authenticated = true;
         return next();
     } else {
-        res.json({ authenticated: false });
-        return;
+        res.locals.authenticated = false;
+        return next();
     }
 }
 

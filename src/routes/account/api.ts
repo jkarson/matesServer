@@ -9,6 +9,10 @@ import { UserType } from '../../objects/user/types/UserType';
 const sh = require('shorthash');
 
 const getAccountInfo = (req: express.Request, res: express.Response): void => {
+    if (!res.locals.authenticated) {
+        res.json({ ...res.locals });
+        return;
+    }
     const user = req.user as UserType;
     User.findOne({ _id: user.id })
         .populate({
@@ -74,6 +78,10 @@ const getAccountInfo = (req: express.Request, res: express.Response): void => {
 };
 
 const createApartment = (req: express.Request, res: express.Response): void => {
+    if (!res.locals.authenticated) {
+        res.json({ ...res.locals });
+        return;
+    }
     const { apartmentName, address, quote, tenantName, age, email, number } = req.body;
     const user = req.user as UserType;
     const newApartment: ApartmentType = new Apartment({
@@ -134,6 +142,10 @@ const createApartment = (req: express.Request, res: express.Response): void => {
 };
 
 const searchCode = (req: express.Request, res: express.Response): void => {
+    if (!res.locals.authenticated) {
+        res.json({ ...res.locals });
+        return;
+    }
     const { code } = req.body;
     Apartment.findOne({ 'profile.code': code })
         .select('tenants profile')
@@ -170,6 +182,10 @@ const searchCode = (req: express.Request, res: express.Response): void => {
 };
 
 const requestToJoin = (req: express.Request, res: express.Response): void => {
+    if (!res.locals.authenticated) {
+        res.json({ ...res.locals });
+        return;
+    }
     const { apartmentId } = req.body;
     const user = req.user as UserType;
     Apartment.findOne({ _id: apartmentId }, function (err, apartment) {
@@ -204,6 +220,10 @@ const requestToJoin = (req: express.Request, res: express.Response): void => {
 };
 
 const viewApartment = (req: express.Request, res: express.Response): void => {
+    if (!res.locals.authenticated) {
+        res.json({ ...res.locals });
+        return;
+    }
     const { apartmentId } = req.body;
     const user = req.user as UserType;
     Apartment.findOne({ _id: apartmentId }, function (err, apartment) {
@@ -229,6 +249,10 @@ const viewApartment = (req: express.Request, res: express.Response): void => {
 };
 
 const cancelJoinRequest = (req: express.Request, res: express.Response): void => {
+    if (!res.locals.authenticated) {
+        res.json({ ...res.locals });
+        return;
+    }
     const { userId, requestedApartmentId } = req.body;
     User.findOne({ _id: userId }, function (err, user) {
         if (err) {
@@ -288,6 +312,10 @@ const cancelJoinRequest = (req: express.Request, res: express.Response): void =>
 };
 
 const leaveApartment = (req: express.Request, res: express.Response): void => {
+    if (!res.locals.authenticated) {
+        res.json({ ...res.locals });
+        return;
+    }
     const { userId, apartmentId } = req.body;
     User.findOne({ _id: userId }, function (err, user) {
         if (err) {

@@ -4,6 +4,10 @@ import mongoose from 'mongoose';
 import { ChoreType } from '../../../objects/chores/types/ChoreType';
 
 const createChoreGenerator = (req: express.Request, res: express.Response): void => {
+    if (!res.locals.authenticated) {
+        res.json({ ...res.locals });
+        return;
+    }
     const { apartmentId, newChoreGenerator, generatedChores } = req.body;
     Apartment.findOne({ _id: apartmentId }, function (err, userApartment) {
         if (err) {
@@ -34,6 +38,10 @@ const createChoreGenerator = (req: express.Request, res: express.Response): void
 };
 
 const markChoreCompleted = (req: express.Request, res: express.Response): void => {
+    if (!res.locals.authenticated) {
+        res.json({ ...res.locals });
+        return;
+    }
     const { apartmentId, choreId, userId } = req.body;
     Apartment.findOne({ _id: apartmentId }, function (err, userApartment) {
         if (err) {
@@ -66,6 +74,10 @@ const markChoreCompleted = (req: express.Request, res: express.Response): void =
 };
 
 const markChoreUncompleted = (req: express.Request, res: express.Response): void => {
+    if (!res.locals.authenticated) {
+        res.json({ ...res.locals });
+        return;
+    }
     const { apartmentId, choreId } = req.body;
     Apartment.findOne({ _id: apartmentId }, function (err, userApartment) {
         if (err) {
@@ -98,6 +110,10 @@ const markChoreUncompleted = (req: express.Request, res: express.Response): void
 };
 
 const deleteChore = (req: express.Request, res: express.Response): void => {
+    if (!res.locals.authenticated) {
+        res.json({ ...res.locals });
+        return;
+    }
     const { apartmentId, choreId } = req.body;
     Apartment.findOne({ _id: apartmentId }, function (err, userApartment) {
         if (err) {
@@ -131,6 +147,10 @@ const deleteChore = (req: express.Request, res: express.Response): void => {
 };
 
 const deleteChoreSeries = (req: express.Request, res: express.Response): void => {
+    if (!res.locals.authenticated) {
+        res.json({ ...res.locals });
+        return;
+    }
     const { apartmentId, choreGeneratorId } = req.body;
     Apartment.findOne({ _id: apartmentId }, function (err, userApartment) {
         if (err) {
@@ -170,6 +190,10 @@ const deleteChoreSeries = (req: express.Request, res: express.Response): void =>
 };
 
 const addChoresAndUpdateChoreGenerators = (req: express.Request, res: express.Response): void => {
+    if (!res.locals.authenticated) {
+        res.json({ ...res.locals });
+        return;
+    }
     const { apartmentId, updatedThrough, newChores } = req.body;
     Apartment.findOne({ _id: apartmentId }, function (err, userApartment) {
         if (err) {
@@ -198,6 +222,10 @@ const addChoresAndUpdateChoreGenerators = (req: express.Request, res: express.Re
 };
 
 const deleteOldChores = (req: express.Request, res: express.Response): void => {
+    if (!res.locals.authenticated) {
+        res.json({ ...res.locals });
+        return;
+    }
     const { apartmentId, choreDeletionIds } = req.body;
     Apartment.findOne({ _id: apartmentId }, function (err, userApartment) {
         if (err) {
