@@ -45,7 +45,7 @@ const matesRouter = express.Router();
 matesRouter.use(authenticateUser);
 
 //Mates
-matesRouter.get('/', getMatesUser);
+matesRouter.get('/get', getMatesUser);
 
 //Profile
 matesRouter.put('/updateApartmentProfile', updateApartmentProfile);

@@ -12,7 +12,7 @@ import {
 const accountRouter = express.Router();
 
 accountRouter.use(authenticateUser);
-accountRouter.get('/', getAccountInfo);
+accountRouter.get('/get', getAccountInfo);
 accountRouter.post('/createApartment', createApartment);
 accountRouter.post('/searchCode', searchCode);
 accountRouter.post('/requestToJoin', requestToJoin);

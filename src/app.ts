@@ -33,8 +33,8 @@ const port = process.env.PORT || 8080; // default port to listen
     app.use(router);
 
     app.use(express.static('client/build'));
-    app.get('*', (_, res) => {
-        res.sendFile(path.resolve(__dirname, 'client', 'build', 'index.html'));
+    app.get('/*', (_, res) => {
+        res.sendFile(path.join(__dirname, '../client/build/index.html'));
     });
 
     //to do: this soon won't be localhost

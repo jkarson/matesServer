@@ -4,7 +4,7 @@ import { deleteAccount, getAccountSettingsInfo, logOutUser } from './api';
 
 const accountSettingsRouter = express.Router();
 accountSettingsRouter.use(authenticateUser);
-accountSettingsRouter.get('/', getAccountSettingsInfo);
+accountSettingsRouter.get('/get', getAccountSettingsInfo);
 accountSettingsRouter.post('/logOutUser', logOutUser);
 accountSettingsRouter.delete('/deleteAccount', deleteAccount);
 export default accountSettingsRouter;
