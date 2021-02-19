@@ -1,5 +1,5 @@
 import { Schema } from 'mongoose';
-import { ChoreFrequency } from '../../../../client/src/App/pages/mates/Chores/models/ChoreFrequency';
+import { ChoreFrequency } from './ChoreFrequency';
 
 export interface ChoreGeneratorType {
     _id: Schema.Types.ObjectId;

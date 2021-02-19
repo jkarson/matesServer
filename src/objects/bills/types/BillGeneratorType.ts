@@ -1,6 +1,6 @@
 import { Schema } from 'mongoose';
-import { BillFrequency } from '../../../../client/src/App/pages/mates/Bills/models/BillFrequency';
 import { AmountWithPercentOwedType } from './AmountWithPercentOwedType';
+import { BillFrequency } from './BillFrequency';
 
 export interface BillGeneratorType {
     _id: Schema.Types.ObjectId;

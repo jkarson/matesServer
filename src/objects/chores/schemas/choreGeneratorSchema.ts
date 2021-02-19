@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { choreFrequencies } from '../../../../client/src/App/pages/mates/Chores/models/ChoreFrequency';
+import { choreFrequencies } from '../types/ChoreFrequency';
 
 const { Schema } = mongoose;
 const choreGeneratorSchema = new Schema({

@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { billFrequencies } from '../../../../client/src/App/pages/mates/Bills/models/BillFrequency';
+import { billFrequencies } from '../types/BillFrequency';
 import amountWithPercentOwedSchema from './amountWithPercentOwedSchema';
 const { Schema } = mongoose;
 

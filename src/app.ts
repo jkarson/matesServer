@@ -8,6 +8,9 @@ import configurePassport from './configs/configurePassport';
 import passport from 'passport';
 import router from './routes/router';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const path = require('path');
+
 const app = express();
 const port = process.env.PORT || 8080; // default port to listen
 
@@ -28,6 +31,11 @@ const port = process.env.PORT || 8080; // default port to listen
     app.use(passport.session());
 
     app.use(router);
+
+    app.use(express.static('client/build'));
+    app.get('*', (_, res) => {
+        res.sendFile(path.resolve(__dirname, 'client', 'build', 'index.html'));
+    });
 
     //to do: this soon won't be localhost
     app.listen(port, () => {
